@@ -1,11 +1,18 @@
 import React, { useState, useCallback } from 'react';
-import { Mail, Upload, Users, Send, CheckCircle, X, Download } from 'lucide-react';
+import { Mail, Upload, Users, Send, CheckCircle, X, Download, Share, PlusSquare } from 'lucide-react';
 import type { EmailData, EmailFormData, AppStep, Toast } from '@/types';
 import { UploadSection } from '@/sections/UploadSection';
 import { ReviewSection } from '@/sections/ReviewSection';
 import { ComposeSection } from '@/sections/ComposeSection';
 import { SendingSection } from '@/sections/SendingSection';
 import { useEmailSender } from '@/hooks/useEmailSender';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 function App() {
   const [step, setStep] = useState<AppStep>('upload');
