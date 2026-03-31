@@ -169,13 +169,13 @@ function App() {
             
             {/* Install Prompt - Floating Top Right */}
             {installPrompt && !isStandalone && (
-              <div className="fixed top-4 right-4 sm:top-6 sm:right-6 z-50 animate-in fade-in slide-in-from-top-2 duration-500">
+              <div className="fixed top-3 right-3 sm:top-6 sm:right-6 z-[60] animate-in fade-in slide-in-from-top-2 duration-500">
                 <button
                   onClick={handleInstall}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 text-white shadow-lg shadow-indigo-500/40 border border-indigo-400/30 text-xs font-bold uppercase tracking-widest hover:bg-indigo-500 hover:scale-105 transition-all group"
+                  className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-indigo-600/90 hover:bg-indigo-500 text-white shadow-xl shadow-indigo-500/20 border border-white/10 backdrop-blur-md text-[10px] sm:text-xs font-bold uppercase tracking-widest transition-all hover:scale-105 active:scale-95 group"
                 >
-                  <Download className="w-4 h-4 group-hover:bounce" />
-                  Install App
+                  <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:bounce" />
+                  <span>Install App</span>
                 </button>
               </div>
             )}
