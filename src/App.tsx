@@ -13,16 +13,22 @@ function App() {
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [installPrompt, setInstallPrompt] = useState<any>(null);
   const [isStandalone, setIsStandalone] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
+  const [showIOSInstructions, setShowIOSInstructions] = useState(false);
 
   React.useEffect(() => {
-    const checkStandalone = () => {
-      setIsStandalone(window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true);
+    const checkPlatform = () => {
+      const isStandaloneMode = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true;
+      setIsStandalone(isStandaloneMode);
+      
+      const userAgent = window.navigator.userAgent.toLowerCase();
+      const ios = /iphone|ipad|ipod/.test(userAgent);
+      setIsIOS(ios);
     };
     
-    checkStandalone();
+    checkPlatform();
     const handler = (e: any) => {
       e.preventDefault();
-      // Only set prompt if NOT in standalone mode
       if (!window.matchMedia('(display-mode: standalone)').matches) {
         setInstallPrompt(e);
       }
@@ -32,6 +38,11 @@ function App() {
   }, []);
 
   const handleInstall = async () => {
+    if (isIOS) {
+      setShowIOSInstructions(true);
+      return;
+    }
+    
     if (!installPrompt) return;
     installPrompt.prompt();
     const { outcome } = await installPrompt.userChoice;
@@ -168,7 +179,7 @@ function App() {
             </div>
             
             {/* Install Prompt - Floating Top Right */}
-            {installPrompt && !isStandalone && (
+            {(installPrompt || (isIOS && !isStandalone)) && (
               <div className="fixed top-3 right-3 sm:top-6 sm:right-6 z-[60] animate-in fade-in slide-in-from-top-2 duration-500">
                 <button
                   onClick={handleInstall}
@@ -178,6 +189,47 @@ function App() {
                   <span>Install App</span>
                 </button>
               </div>
+            )}
+
+            {/* iOS Installation Instructions */}
+            {isIOS && (
+              <Dialog open={showIOSInstructions} onOpenChange={setShowIOSInstructions}>
+                <DialogContent className="bg-slate-900 border-white/10 text-white max-w-xs sm:max-w-sm">
+                  <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2">
+                      <Download className="w-5 h-5 text-indigo-400" />
+                      Install on iOS
+                    </DialogTitle>
+                    <DialogDescription className="text-white/60">
+                      To install BulkMail Pro on your iPhone or iPad, follow these steps:
+                    </DialogDescription>
+                  </DialogHeader>
+                  
+                  <div className="mt-4 space-y-4">
+                    <div className="flex items-start gap-3 p-3 rounded-xl bg-white/5 border border-white/5">
+                      <div className="w-6 h-6 rounded-full bg-indigo-500/20 flex items-center justify-center flex-shrink-0 text-xs font-bold text-indigo-400">1</div>
+                      <p className="text-sm text-white/80">
+                        Tap the <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-white/10 text-white"><Share className="w-3.5 h-3.5" /> Share</span> button in Safari.
+                      </p>
+                    </div>
+                    <div className="flex items-start gap-3 p-3 rounded-xl bg-white/5 border border-white/5">
+                      <div className="w-6 h-6 rounded-full bg-indigo-500/20 flex items-center justify-center flex-shrink-0 text-xs font-bold text-indigo-400">2</div>
+                      <p className="text-sm text-white/80">
+                        Scroll down and tap <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-white/10 text-white"><PlusSquare className="w-3.5 h-3.5 mr-1" /> Add to Home Screen</span>.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-6">
+                    <button
+                      onClick={() => setShowIOSInstructions(false)}
+                      className="glass-button w-full py-3"
+                    >
+                      Got it
+                    </button>
+                  </div>
+                </DialogContent>
+              </Dialog>
             )}
 
             {/* Step Indicator */}
