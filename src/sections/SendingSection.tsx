@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { CheckCircle, XCircle, Clock, Loader2, RotateCcw, Home, Mail, AlertCircle, Info } from 'lucide-react';
+import { useState } from 'react';
+import { CheckCircle, XCircle, Clock, Loader2, RotateCcw, Mail, AlertCircle, Info } from 'lucide-react';
 import type { SendStatus } from '@/types';
 import {
   Dialog,

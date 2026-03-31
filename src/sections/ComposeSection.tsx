@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Send, Code, Type, Key, User, Mail, Eye, EyeOff, FileText, X } from 'lucide-react';
+import { ArrowLeft, Send, Code, Type, Key, User, Mail, Eye, FileText, X } from 'lucide-react';
 import type { EmailFormData } from '@/types';
 
 interface ComposeSectionProps {
