@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Send, Code, Type, Key, User, Mail, Eye, FileText, X } from 'lucide-react';
+import { ArrowLeft, Send, Code, Type, Key, User, Mail, Eye, FileText, X, Upload } from 'lucide-react';
 import type { EmailFormData } from '@/types';
 
 interface ComposeSectionProps {
@@ -7,30 +7,48 @@ interface ComposeSectionProps {
   onBack: () => void;
   onSend: (formData: EmailFormData) => void;
   isSending: boolean;
+  apiKey: string;
+  onApiKeyChange: (key: string) => void;
 }
 
-export function ComposeSection({ emailCount, onBack, onSend, isSending }: ComposeSectionProps) {
+export function ComposeSection({ emailCount, onBack, onSend, isSending, apiKey, onApiKeyChange }: ComposeSectionProps) {
   const [formData, setFormData] = useState<EmailFormData>({
     subject: '',
     body: '',
     isHtml: false,
     fromName: '',
-    fromEmail: 'john@studentprenuer.site',
+    fromEmail: 'admin@studentpreneur.site',
   });
   
   const [showPreview, setShowPreview] = useState(false);
+
+  const handleHtmlFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const content = event.target?.result as string;
+      if (content) {
+        setFormData(prev => ({ ...prev, body: content }));
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSend(formData);
   };
 
-  const isDomainValid = formData.fromEmail.endsWith('@studentprenuer.site');
+  const isDomainValid = formData.fromEmail.endsWith('@studentpreneur.site');
   const isValid = 
     formData.subject.trim() &&
     formData.body.trim() &&
     formData.fromEmail.trim() &&
-    isDomainValid;
+    isDomainValid &&
+    apiKey.trim().length > 0;
 
   return (
     <div className="w-full max-w-4xl mx-auto">
@@ -55,15 +73,31 @@ export function ComposeSection({ emailCount, onBack, onSend, isSending }: Compos
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* API Configuration Note */}
+        {/* API Configuration & Key Input */}
         <div className="glass-card-strong p-4 sm:p-6 border-indigo-500/20 bg-indigo-500/5">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center flex-shrink-0">
-              <Key className="w-5 h-5 text-indigo-400" />
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center flex-shrink-0">
+                <Key className="w-5 h-5 text-indigo-400" />
+              </div>
+              <div>
+                <h3 className="text-white font-medium text-sm">Resend API Key</h3>
+                <p className="text-white/50 text-xs">
+                  {import.meta.env.VITE_RESEND_API_KEY
+                    ? 'Configured via environment variable (or enter custom key below).'
+                    : 'Required: Enter your Resend API key below to send emails.'}
+                </p>
+              </div>
             </div>
-            <div>
-              <h3 className="text-white font-medium text-sm">API Configured</h3>
-              <p className="text-white/50 text-xs">Using Resend API key from environment configuration.</p>
+            
+            <div className="w-full sm:w-80">
+              <input
+                type="password"
+                value={apiKey}
+                onChange={(e) => onApiKeyChange(e.target.value)}
+                placeholder="re_..."
+                className="glass-input w-full py-2.5 px-3 text-xs"
+              />
             </div>
           </div>
         </div>
@@ -106,14 +140,14 @@ export function ComposeSection({ emailCount, onBack, onSend, isSending }: Compos
                   type="email"
                   value={formData.fromEmail}
                   onChange={(e) => setFormData({ ...formData, fromEmail: e.target.value })}
-                  placeholder="john@studentprenuer.site"
+                  placeholder="admin@studentpreneur.site"
                   className={`glass-input w-full pl-10 py-3 ${!isDomainValid ? 'border-red-500/50 focus:border-red-500' : ''}`}
                 />
               </div>
               {!isDomainValid && (
                 <p className="text-red-400 text-[10px] mt-1.5 flex items-center gap-1">
                   <X className="w-3 h-3" />
-                  Must end with @studentprenuer.site
+                  Must end with @studentpreneur.site
                 </p>
               )}
             </div>
@@ -187,11 +221,30 @@ export function ComposeSection({ emailCount, onBack, onSend, isSending }: Compos
                 </button>
               </div>
               
+              {formData.isHtml && (
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 mb-3 rounded-lg bg-indigo-500/10 border border-indigo-500/20">
+                  <div className="flex items-center gap-2 text-xs text-indigo-300">
+                    <Code className="w-4 h-4 text-indigo-400 flex-shrink-0" />
+                    <span>Paste HTML directly into the box below or upload a <code>.html</code> file template.</span>
+                  </div>
+                  <label className="glass-button-secondary py-1.5 px-3 text-xs flex items-center gap-1.5 cursor-pointer self-start sm:self-auto flex-shrink-0">
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>Upload .html File</span>
+                    <input
+                      type="file"
+                      accept=".html,.htm,.txt"
+                      onChange={handleHtmlFileUpload}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+              )}
+
               <textarea
                 value={formData.body}
                 onChange={(e) => setFormData({ ...formData, body: e.target.value })}
                 placeholder={formData.isHtml 
-                  ? '<h1>Hello!</h1><p>Your HTML content here...</p>' 
+                  ? '<h1>Hello!</h1><p>Your HTML content here (or click "Upload .html File" above)...</p>' 
                   : 'Enter your message here...'}
                 rows={8}
                 className="glass-input w-full resize-none font-mono text-sm"

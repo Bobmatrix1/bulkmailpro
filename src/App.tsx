@@ -108,17 +108,26 @@ function App() {
     addToast('info', 'All recipients removed');
   }, [addToast]);
 
+  const [apiKey, setApiKey] = useState<string>(() => {
+    return localStorage.getItem('resend_api_key') || import.meta.env.VITE_RESEND_API_KEY || '';
+  });
+
+  const handleApiKeyChange = useCallback((key: string) => {
+    setApiKey(key);
+    localStorage.setItem('resend_api_key', key);
+  }, []);
+
   const handleSend = useCallback(async (formData: EmailFormData) => {
-    const apiKey = import.meta.env.VITE_RESEND_API_KEY;
+    const keyToSend = apiKey.trim() || import.meta.env.VITE_RESEND_API_KEY;
     
-    if (!apiKey) {
-      addToast('error', 'Resend API key is not configured in .env');
+    if (!keyToSend) {
+      addToast('error', 'Resend API key is not configured. Please enter your API key.');
       return;
     }
 
     setStep('sending');
     try {
-      await sendEmails(emails, formData, apiKey);
+      await sendEmails(emails, formData, keyToSend);
       const successCount = statuses.filter(s => s.status === 'success').length;
       if (successCount > 0) {
         addToast('success', `Successfully sent ${successCount} emails!`);
@@ -126,7 +135,7 @@ function App() {
     } catch (err) {
       addToast('error', err instanceof Error ? err.message : 'Failed to send emails');
     }
-  }, [emails, sendEmails, statuses, addToast]);
+  }, [emails, sendEmails, statuses, addToast, apiKey]);
 
   const handleReset = useCallback(() => {
     setEmails([]);
@@ -308,6 +317,8 @@ function App() {
               onBack={() => setStep('review')}
               onSend={handleSend}
               isSending={isSending}
+              apiKey={apiKey}
+              onApiKeyChange={handleApiKeyChange}
             />
           )}
           
