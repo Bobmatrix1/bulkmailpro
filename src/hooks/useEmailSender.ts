@@ -28,6 +28,10 @@ export function useEmailSender(): UseEmailSenderReturn {
     apiKey: string
   ): Promise<SendStatus> => {
     try {
+      const fromAddress = formData.fromName?.trim()
+        ? `${formData.fromName.trim()} <${formData.fromEmail.trim()}>`
+        : formData.fromEmail.trim();
+
       const response = await fetch('/api/resend/emails', {
         method: 'POST',
         headers: {
@@ -35,7 +39,7 @@ export function useEmailSender(): UseEmailSenderReturn {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          from: `${formData.fromName} <${formData.fromEmail}>`,
+          from: fromAddress,
           to: emailData.email,
           subject: formData.subject,
           [formData.isHtml ? 'html' : 'text']: formData.body,
