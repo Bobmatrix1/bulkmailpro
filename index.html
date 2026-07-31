@@ -65,29 +65,29 @@
         <p class="loading-text">Loading BulkMail Pro...</p>
       </div>
     </div>
-    <script>
-      // Force unregister all service workers to clear cache
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(function(registrations) {
-          for(let registration of registrations) {
-            registration.unregister();
-            console.log('Force unregistered SW:', registration);
-          }
-        });
-      }
-    </script>
     <script type="module" src="/src/main.tsx"></script>
     <script>
-      // Register Service Worker
+      // Service Worker registration with auto-update on reload
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('./sw.js')
-            .then((registration) => {
-              console.log('SW registered:', registration.scope);
-            })
-            .catch((error) => {
-              console.log('SW registration failed:', error);
+          navigator.serviceWorker.register('/sw.js').then((registration) => {
+            // Check for updates on every page reload
+            registration.update();
+
+            registration.addEventListener('updatefound', () => {
+              const installingWorker = registration.installing;
+              if (installingWorker) {
+                installingWorker.addEventListener('statechange', () => {
+                  if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    // Automatically reload to apply the latest build
+                    window.location.reload();
+                  }
+                });
+              }
             });
+          }).catch((error) => {
+            console.log('SW registration failed:', error);
+          });
         });
       }
     </script>
